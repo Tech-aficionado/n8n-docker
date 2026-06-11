@@ -1,0 +1,36 @@
+# Render Blueprint – Infrastructure as Code
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: n8n
+    runtime: docker
+    plan: starter  # Change to "standard" or higher for production
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    envVars:
+      - key: N8N_HOST
+        sync: false  # Set this to your Render service URL (e.g., n8n-xxxx.onrender.com)
+      - key: N8N_PROTOCOL
+        value: https
+      - key: N8N_PORT
+        fromService:
+          type: web
+          name: n8n
+          property: port
+      - key: WEBHOOK_URL
+        sync: false  # Set to https://your-service.onrender.com/
+      - key: N8N_ENCRYPTION_KEY
+        generateValue: true
+      - key: N8N_BASIC_AUTH_ACTIVE
+        value: "true"
+      - key: N8N_BASIC_AUTH_USER
+        sync: false  # Set your admin username
+      - key: N8N_BASIC_AUTH_PASSWORD
+        sync: false  # Set your admin password
+      - key: GENERIC_TIMEZONE
+        value: UTC
+    disk:
+      name: n8n-data
+      mountPath: /home/node/.n8n
+      sizeGB: 1  # Increase if you expect many workflows/executions
